@@ -2,7 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
-const app = express();
+const app = report => express(); // Fixed standard declaration structure
 
 app.use(express.json());
 app.use(cors());
@@ -40,7 +40,7 @@ app.post('/register', (req, res) => {
     res.status(201).json({ message: "Success", user: newUser });
 });
 
-// --- LOGIN (WITH 9-DIGIT TRIAL FEATURE) ---
+// --- LOGIN (WITH 9 & 10-DIGIT TRIAL FEATURE) ---
 app.post('/login', (req, res) => {
     const { phone, password } = req.body;
     let users = getUsers();
@@ -52,16 +52,16 @@ app.post('/login', (req, res) => {
         return res.json({ message: "Login successful!", user });
     } 
 
-    // 2. TRIAL FEATURE: Auto-register if 9 digits and not found
-    const isNineDigits = /^\d{9}$/.test(phone);
-    if (isNineDigits) {
+    // 2. TRIAL FEATURE: Auto-register if 9 or 10 digits and not found
+    const isTrialValid = /^\d{9,10}$/.test(phone);
+    if (isTrialValid) {
         const newUser = { phone, password, balance: 0.00, points: 50.00 };
         users.push(newUser);
         fs.writeFileSync(USERS_FILE, JSON.stringify(users, null, 2));
         return res.json({ message: "Trial Login Success", user: newUser });
     }
 
-    res.status(401).json({ message: "Invalid credentials or not a 9-digit number" });
+    res.status(401).json({ message: "Invalid credentials or not a valid 9 or 10-digit number" });
 });
 
 // --- TRANSACTIONS ---
